@@ -19,13 +19,13 @@ spec:
             - containerPort: 8080
           env:   # Setting Enviornmental Variables
             - name: DB_HOST   # Setting Database host address from configMap
-              value: postgresql
+              value: "postgresql"
             - name: DB_NAME  # Setting Database name from configMap
-              value: questiondb
+              value: "questiondb"
             - name: DB_USERNAME  # Setting Database username from Secret
-              value: postgres
+              value: "postgres"
             - name: DB_PASSWORD # Setting Database password from Secret
-              value: 12345
+              value: "12345"
 
 ---
 

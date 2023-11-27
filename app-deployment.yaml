@@ -1,41 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: springboot-crud-deployment
+  name: quizapp-deployment
 spec:
   selector:
     matchLabels:
-      app: springboot-k8s-mysql
+      app: quizapp
   replicas: 3
   template:
     metadata:
       labels:
-        app: springboot-k8s-mysql
+        app: quizapp
     spec:
       containers:
-        - name: springboot-crud-k8s
-          image: praveensingam1994/springboot-crud-k8s:1.0
+        - name: quiz-crud-k8s
+          image: rohitpadwal08/quiz-crud-k8s
           ports:
             - containerPort: 8080
           env:   # Setting Enviornmental Variables
             - name: DB_HOST   # Setting Database host address from configMap
-              value: mysql
+              value: postgresql
             - name: DB_NAME  # Setting Database name from configMap
-              value: singamlabs
+              value: questiondb
             - name: DB_USERNAME  # Setting Database username from Secret
-              value: root
+              value: postgres
             - name: DB_PASSWORD # Setting Database password from Secret
-              value: root
+              value: 12345
 
 ---
 
 apiVersion: v1 # Kubernetes API version
 kind: Service # Kubernetes resource kind we are creating
 metadata: # Metadata of the resource kind we are creating
-  name: springboot-crud-svc
+  name: quiz-crud-svc
 spec:
   selector:
-    app: springboot-k8s-mysql
+    app: quizapp
   ports:
     - protocol: "TCP"
       port: 8080 # The port that the service is running on in the cluster

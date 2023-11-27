@@ -1,10 +1,10 @@
-# Define a 'Persistent Voulume Claim'(PVC) for Mysql Storage, dynamically provisioned by cluster
+# Define a 'Persistent Voulume Claim'(PVC) for postgresql Storage, dynamically provisioned by cluster
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mysql-pv-claim # name of PVC essential for identifying the storage data
+  name: postgresql-pv-claim # name of PVC essential for identifying the storage data
   labels:
-    app: mysql
+    app: postgresql
     tier: database
 spec:
   accessModes:
@@ -13,61 +13,61 @@ spec:
     requests:
       storage: 1Gi    #This will tell kubernetes about the amount of space we are trying to claim.
 ---
-# Configure 'Deployment' of mysql server
+# Configure 'Deployment' of postgresql server
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql
+  name: postgresql
   labels:
-    app: mysql
+    app: postgresql
     tier: database
 spec:
-  selector: # mysql Pod Should contain same labels
+  selector: # postgresql Pod Should contain same labels
     matchLabels:
-      app: mysql
+      app: postgresql
       tier: database
   strategy:
     type: Recreate
   template:
     metadata:
       labels: # Must match 'Service' and 'Deployment' selectors
-        app: mysql
+        app: postgresql
         tier: database
     spec:
       containers:
-        - image: mysql:5.7 # image from docker-hub
+        - image: postgresql:15 # image from docker-hub
           args:
-            - "--ignore-db-dir=lost+found" # Workaround for https://github.com/docker-library/mysql/issues/186
-          name: mysql
+            - "--ignore-db-dir=lost+found" # Workaround for https://github.com/docker-library/postgresql/issues/186
+          name: postgresql
           env:
-            - name: MYSQL_ROOT_PASSWORD
-              value: root
-            - name: MYSQL_DATABASE # Setting Database Name from a 'ConfigMap'
-              value: singamlabs
+            - name: postgresql_ROOT_PASSWORD
+              value: 12345
+            - name: postgresql_DATABASE # Setting Database Name from a 'ConfigMap'
+              value: questiondb
           ports:
             - containerPort: 3306
-              name: mysql
+              name: postgresql
           volumeMounts:        # Mounting voulume obtained from Persistent Volume Claim
-            - name: mysql-persistent-storage
-              mountPath: /var/lib/mysql #This is the path in the container on which the mounting will take place.
+            - name: postgresql-persistent-storage
+              mountPath: /var/lib/postgresql #This is the path in the container on which the mounting will take place.
       volumes:
-        - name: mysql-persistent-storage # Obtaining 'vloume' from PVC
+        - name: postgresql-persistent-storage # Obtaining 'vloume' from PVC
           persistentVolumeClaim:
-            claimName: mysql-pv-claim
+            claimName: postgresql-pv-claim
 ---
-# Define a 'Service' To Expose mysql to Other Services
+# Define a 'Service' To Expose postgresql to Other Services
 apiVersion: v1
 kind: Service
 metadata:
-  name: mysql  # DNS name
+  name: postgresql  # DNS name
   labels:
-    app: mysql
+    app: postgresql
     tier: database
 spec:
   ports:
     - port: 3306
       targetPort: 3306
-  selector:       # mysql Pod Should contain same labels
-    app: mysql
+  selector:       # postgresql Pod Should contain same labels
+    app: postgresql
     tier: database
   clusterIP: None  # We Use DNS, Thus ClusterIP is not relevant
